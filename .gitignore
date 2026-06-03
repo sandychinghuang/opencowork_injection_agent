@@ -1,0 +1,4 @@
+db/
+whitepapers/
+core/__pycache__
+.env
