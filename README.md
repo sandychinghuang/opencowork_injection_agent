@@ -160,7 +160,7 @@ python main.py --list-goals
 conda activate claude-agent
 cd d:/injection_agent/claude_agent
 python main.py -s T1_A_Rename -g delete_files --db test.db -n 20
-python main.py -s T1_B_Sort -g modify_content --db modify_content_test.db -n 20
+python main.py -s T1_A_Rename -g modify_content --db modify_content_test.db -n 20
 ＿
 # ── 查詢指令 ──────────────────────────────────────────────────
 # 列出所有情境與其預設 goal
@@ -348,13 +348,13 @@ start report.html
 
 ```bash
 # 所有攻擊成功案例
-sqlite3 results.db "SELECT scenario, category, injection_prompt, notes FROM tests WHERE success=1"
+sqlite3 results.db "SELECT scenario, category, injection_prompt, judge_response FROM injection_results WHERE success=1"
 
 # 每個情境的成功率
-sqlite3 results.db "SELECT scenario, COUNT(*) as total, SUM(success) as wins FROM tests GROUP BY scenario"
+sqlite3 results.db "SELECT scenario, COUNT(*) as total, SUM(success) as wins FROM injection_results GROUP BY scenario"
 
 # 特定 goal 的成功率分析
-sqlite3 results.db "SELECT scenario, COUNT(*) FROM tests WHERE scenario LIKE '%delete_files' AND success=1 GROUP BY scenario"
+sqlite3 results.db "SELECT scenario, COUNT(*) FROM injection_results WHERE scenario LIKE '%delete_files' AND success=1 GROUP BY scenario"
 ```
 
 ---

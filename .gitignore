@@ -1,4 +1,7 @@
 db/
+success_db/
 whitepapers/
 core/__pycache__
-.env
+.env
+
+migrate_old_dbs.py

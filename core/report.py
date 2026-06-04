@@ -13,9 +13,9 @@ class ReportGenerator:
 
     def generate(self, output_path: str = "report.html") -> str:
         rows = self.conn.execute(
-            "SELECT * FROM tests ORDER BY id"
+            "SELECT * FROM injection_results ORDER BY id"
         ).fetchall()
-        cols = [d[0] for d in self.conn.execute("SELECT * FROM tests LIMIT 0").description]
+        cols = [d[0] for d in self.conn.execute("SELECT * FROM injection_results LIMIT 0").description]
 
         tests = [dict(zip(cols, r)) for r in rows]
         total = len(tests)

@@ -10,7 +10,7 @@ cowork_api_endpoint: ""   # 留空讓程式自動探索
 max_iterations: 50
 wait_after_agent_seconds: 90
 restart_server_between_runs: false
-anthropic_api_key: "APIANTHROPIC_API_KEY_KEY"
+anthropic_api_key: "ANTHROPIC_API_KEY"
 openai_api_key: "OPENAI_API_KEY"
 
 generator_model: "gpt-5.4-mini"  # Attacker LLM 模型

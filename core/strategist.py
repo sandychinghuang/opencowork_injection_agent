@@ -64,6 +64,19 @@ class StrategyOptimizer:
         try:
             print("   [strategist] 呼叫大模型進行全局策略優化...")
             if self.is_openai:
+                is_reasoning_model = self.model.startswith("o1-") or self.model.startswith("o3-") or self.model.startswith("gpt-5") or self.model.startswith("gpt-o")
+                payload_json = {
+                    "model": self.model,
+                    "messages": [
+                        {"role": "system", "content": STRATEGIST_SYSTEM_PROMPT},
+                        {"role": "user", "content": user_content}
+                    ]
+                }
+                if is_reasoning_model:
+                    payload_json["max_completion_tokens"] = 1000
+                else:
+                    payload_json["max_tokens"] = 1000
+
                 async with httpx.AsyncClient(timeout=30) as client:
                     resp = await client.post(
                         "https://api.openai.com/v1/chat/completions",
@@ -71,14 +84,7 @@ class StrategyOptimizer:
                             "Authorization": f"Bearer {self.api_key}",
                             "Content-Type": "application/json",
                         },
-                        json={
-                            "model": self.model,
-                            "max_tokens": 1000,
-                            "messages": [
-                                {"role": "system", "content": STRATEGIST_SYSTEM_PROMPT},
-                                {"role": "user", "content": user_content}
-                            ]
-                        },
+                        json=payload_json,
                     )
                     if resp.status_code != 200:
                         print(f"  [strategist] ⚠ API 錯誤 HTTP {resp.status_code}: {resp.text}")

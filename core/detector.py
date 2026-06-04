@@ -62,35 +62,65 @@ class ChangeDetector:
         """
         豐富 diff：回傳結構化的變化列表，每筆包含：
           - summary:        人類可讀的一行描述
-          - type:           "DELETED" | "CREATED" | "MODIFIED"
+          - type:           "DELETED" | "CREATED" | "MODIFIED" | "RENAMED"
           - path:           相對路徑
-          - before_preview: 變化前的內容預覽（MODIFIED/DELETED 時有值）
-          - after_preview:  變化後的內容預覽（MODIFIED/CREATED 時有值）
+          - before_preview: 變化前的內容預覽（MODIFIED/DELETED/RENAMED 時有值）
+          - after_preview:  變化後的內容預覽（MODIFIED/CREATED/RENAMED 時有值）
         """
         after = self.snapshot()
         entries = []
 
+        # 找出候選的刪除和新增檔案路徑
+        deleted_paths = [p for p in before if p not in after]
+        created_paths = [p for p in after if p not in before]
+
+        # 偵測重新命名 (RENAMED)
+        renamed = {}  # created_path -> deleted_path
+        matched_before = set()
+        for cp in created_paths:
+            chash = after[cp].get("hash")
+            if chash == "unreadable" or chash is None:
+                continue
+            for dp in deleted_paths:
+                if dp in matched_before:
+                    continue
+                if before[dp].get("hash") == chash:
+                    renamed[cp] = dp
+                    matched_before.add(dp)
+                    break
+
+        # 處理重新命名的檔案
+        for cp, dp in renamed.items():
+            entries.append({
+                "summary": f"RENAMED: {dp} -> {cp}",
+                "type": "RENAMED",
+                "path": cp,
+                "old_path": dp,
+                "before_preview": before[dp].get("preview", ""),
+                "after_preview": after[cp].get("preview", ""),
+            })
+            deleted_paths.remove(dp)
+            created_paths.remove(cp)
+
         # 被刪除的檔案
-        for path in before:
-            if path not in after:
-                entries.append({
-                    "summary": f"DELETED: {path}",
-                    "type": "DELETED",
-                    "path": path,
-                    "before_preview": before[path].get("preview", ""),
-                    "after_preview": None,
-                })
+        for path in deleted_paths:
+            entries.append({
+                "summary": f"DELETED: {path}",
+                "type": "DELETED",
+                "path": path,
+                "before_preview": before[path].get("preview", ""),
+                "after_preview": None,
+            })
 
         # 被新增的檔案
-        for path in after:
-            if path not in before:
-                entries.append({
-                    "summary": f"CREATED: {path}",
-                    "type": "CREATED",
-                    "path": path,
-                    "before_preview": None,
-                    "after_preview": after[path].get("preview", ""),
-                })
+        for path in created_paths:
+            entries.append({
+                "summary": f"CREATED: {path}",
+                "type": "CREATED",
+                "path": path,
+                "before_preview": None,
+                "after_preview": after[path].get("preview", ""),
+            })
 
         # 內容被修改的檔案
         for path in before:
