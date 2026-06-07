@@ -27,28 +27,28 @@ def _format_rich_entries(rich_entries: list[dict]) -> str:
             before = e.get("before_preview") or ""
             parts.append(
                 f"【DELETED】{path}\n"
-                f"  刪除前內容預覽：\n  {before[:300].replace(chr(10), chr(10) + '  ')}"
+                f"  刪除前內容預覽（僅顯示前 300 個字元）：\n  {before[:300].replace(chr(10), chr(10) + '  ')}"
             )
         elif t == "CREATED":
             after = e.get("after_preview") or ""
             parts.append(
                 f"【CREATED】{path}\n"
-                f"  新檔案內容預覽：\n  {after[:300].replace(chr(10), chr(10) + '  ')}"
+                f"  新檔案內容預覽（僅顯示前 300 個字元）：\n  {after[:300].replace(chr(10), chr(10) + '  ')}"
             )
         elif t == "MODIFIED":
             before = e.get("before_preview") or ""
             after = e.get("after_preview") or ""
             parts.append(
                 f"【MODIFIED】{path}\n"
-                f"  修改前內容預覽：\n  {before[:250].replace(chr(10), chr(10) + '  ')}\n"
-                f"  修改後內容預覽：\n  {after[:250].replace(chr(10), chr(10) + '  ')}"
+                f"  修改前內容預覽（僅顯示前 250 個字元）：\n  {before[:250].replace(chr(10), chr(10) + '  ')}\n"
+                f"  修改後內容預覽（僅顯示前 250 個字元）：\n  {after[:250].replace(chr(10), chr(10) + '  ')}"
             )
         elif t == "RENAMED":
             old_path = e.get("old_path") or ""
             after = e.get("after_preview") or ""
             parts.append(
                 f"【RENAMED】{old_path} -> {path}\n"
-                f"  重新命名後的檔案內容預覽（未被修改）：\n  {after[:300].replace(chr(10), chr(10) + '  ')}"
+                f"  重新命名後的檔案內容預覽（僅顯示前 300 個字元，且內容未被修改）：\n  {after[:300].replace(chr(10), chr(10) + '  ')}"
             )
 
     return "\n\n".join(parts)

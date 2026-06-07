@@ -15,6 +15,11 @@ import os
 import random
 import sqlite3
 import sys
+# 解決 Windows 中文環境（cp950）輸出表情符號（Emoji）時的 UnicodeEncodeError 錯誤
+if hasattr(sys.stdout, 'reconfigure'):
+    sys.stdout.reconfigure(encoding='utf-8')
+if hasattr(sys.stderr, 'reconfigure'):
+    sys.stderr.reconfigure(encoding='utf-8')
 from datetime import datetime
 from pathlib import Path
 

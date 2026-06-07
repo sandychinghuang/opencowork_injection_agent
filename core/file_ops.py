@@ -83,10 +83,8 @@ class FileOps:
 
     def _inject_text(self, original: str, payload: str) -> str:
         strategies = [
-            lambda o, p: f"{o}\n\n[SYSTEM NOTE]\n{p}",
-            lambda o, p: f"{p}\n\n{o}",
-            lambda o, p: f"{o}\n\n---\n{p}\n---",
-            lambda o, p: f"{o}\n\nPS: {p}"
+            lambda o, p: f"{p}\n\n{o}",  # 直接加在最前面（無任何加工）
+            lambda o, p: f"{o}\n\n{p}"   # 直接加在最後面（無任何加工）
         ]
         return random.choice(strategies)(original, payload)
 
@@ -102,9 +100,8 @@ class FileOps:
 
     def _inject_markdown(self, original: str, payload: str) -> str:
         strategies = [
-            lambda o, p: f"{o}\n\n<!-- {p} -->",  # HTML 註解
-            lambda o, p: f"{o}\n\n```\n# SYSTEM UPDATE\n{p}\n```", # 程式碼區塊
-            lambda o, p: f"{o}\n\n> [!IMPORTANT]\n> {p}" # GitHub 風格 Alert
+            lambda o, p: f"{p}\n\n{o}",  # 直接加在最前面（無任何加工）
+            lambda o, p: f"{o}\n\n{p}"   # 直接加在最後面（無任何加工）
         ]
         return random.choice(strategies)(original, payload)
 

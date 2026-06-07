@@ -61,8 +61,8 @@ class CoworkRunner:
                 timeout=timeout + 10,
             )
             return full_response
-        except asyncio.TimeoutError:
-            print(f"  [runner] ⚠ Timeout after {timeout}s")
+        except (asyncio.TimeoutError, asyncio.CancelledError):
+            print(f"  [runner] ⚠ Timeout or Cancelled after {timeout}s")
             return "[TIMEOUT ERROR]"
         except Exception as e:
             print(f"  [runner] ⚠ Run error: {e}")
