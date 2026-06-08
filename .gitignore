@@ -6,3 +6,4 @@ core/__pycache__
 
 migrate_old_dbs.py
 logs/
+reports/

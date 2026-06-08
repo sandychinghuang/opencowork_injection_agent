@@ -169,9 +169,8 @@ async def run_scenario(scenario: dict, config: dict, conn, runner, judge: Verdic
     while valid_runs < max_iterations:
         if not payload_queue:
             past = get_past_results(conn, scenario=name)
-            representative_user_prompt = random.choice(user_prompts)
             print(f"  🧠 [orchestrator] 呼叫 API 一口氣生成 {batch_size} 個對抗 Prompts...")
-            payload_queue = await generator.generate_batch(whitepaper, user_prompt=representative_user_prompt, num_prompts=batch_size)
+            payload_queue = await generator.generate_batch(whitepaper, user_prompts=user_prompts, num_prompts=batch_size)
             
             print(f"\n  [orchestrator] === 成功生成 {len(payload_queue)} 個發散對抗 Payload ===")
             for idx, item in enumerate(payload_queue, 1):
@@ -196,8 +195,9 @@ async def run_scenario(scenario: dict, config: dict, conn, runner, judge: Verdic
         print(f"  Category : {category}")
         print(f"  Strategy : {strategy}")
         print(f"  Payload  : {inj_prompt[:120]}...")
-        
-        user_prompt = representative_user_prompt
+
+        # 每次 valid run 獨立隨機選一個 user_prompt 執行（attacker 已知所有語境，此處選哪個都合理）
+        user_prompt = random.choice(user_prompts)
         print(f"  UserPmt  : {user_prompt}")
         
         injected = file_ops.inject(inj_prompt, inject_files, 1)
@@ -493,7 +493,11 @@ async def main():
         total_success += await run_scenario(scenario, config, conn, runner, judge, max_iterations)
 
     await runner.shutdown()
-    report_path = report_gen.generate("report.html")
+    # Report 命名與 DB 一致，存在 reports/ 資料夾，不同情境的 report 不互蓋
+    reports_dir = Path("reports")
+    reports_dir.mkdir(exist_ok=True)
+    report_filename = Path(db_path).stem + ".html"  # e.g. T1_A_Rename_modify_content.html
+    report_path = report_gen.generate(str(reports_dir / report_filename))
 
     print(f"\n{'='*60}")
     print(f"  全部完成。{total_success} 次攻擊成功（{len(scenarios)} 個情境）")

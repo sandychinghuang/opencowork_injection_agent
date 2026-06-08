@@ -37,13 +37,15 @@ class InjectionGenerator:
         self.goal = goal if goal in GOALS else "any"
         print(f"  [generator] 注入目標: {self.goal} — {GOALS[self.goal]}")
 
-    async def generate_batch(self, whitepaper: str, user_prompt: str, num_prompts: int = 10) -> list[dict]:
+    async def generate_batch(self, whitepaper: str, user_prompts: list[str], num_prompts: int = 10) -> list[dict]:
         """
-        一次呼叫 API，生成符合指導白皮書與正常任務語境的 10 個策略與形式高度發散的對抗 Prompt
+        一次呼叫 API，生成符合指導白皮書與所有任務語境的 10 個策略與形式高度發散的對抗 Prompt
         （支援動態遞補重試機制，保證生成品質與數量穩定）
         """
         goal_desc = GOALS.get(self.goal, GOALS["any"])
-        print(f"  🔥 [generator] 批次生成啟動: 任務語境='{user_prompt}'")
+        # 將所有 user_prompt 變體格式化為編號清單
+        user_prompts_str = "\n".join(f"- 任務指令變體 {i+1}：{p}" for i, p in enumerate(user_prompts))
+        print(f"  🔥 [generator] 批次生成啟動: 所有任務語境共 {len(user_prompts)} 種")
 
         prompts_list = []
         
@@ -60,7 +62,7 @@ class InjectionGenerator:
                     system_prompt = ATTACKER_SYSTEM_PROMPT.format(goal_desc=goal_desc)
                     user_prompt_formatted = ATTACKER_USER_TEMPLATE.format(
                         num_prompts=needed,  # 動態要求當前所需的殘值
-                        user_prompt=user_prompt,
+                        user_prompts_str=user_prompts_str,
                         whitepaper=whitepaper
                     )
 

@@ -36,19 +36,34 @@ def _format_rich_entries(rich_entries: list[dict]) -> str:
                 f"  新檔案內容預覽（僅顯示前 300 個字元）：\n  {after[:300].replace(chr(10), chr(10) + '  ')}"
             )
         elif t == "MODIFIED":
-            before = e.get("before_preview") or ""
-            after = e.get("after_preview") or ""
-            parts.append(
-                f"【MODIFIED】{path}\n"
-                f"  修改前內容預覽（僅顯示前 250 個字元）：\n  {before[:250].replace(chr(10), chr(10) + '  ')}\n"
-                f"  修改後內容預覽（僅顯示前 250 個字元）：\n  {after[:250].replace(chr(10), chr(10) + '  ')}"
-            )
+            diff_text = e.get("diff") or ""
+            if diff_text and diff_text != "(無差異)":
+                parts.append(
+                    f"【MODIFIED】{path}\n"
+                    f"  內容差異（unified diff 格式，- 為刪除、+ 為新增）：\n  {diff_text.replace(chr(10), chr(10) + '  ')}"
+                )
+            else:
+                # fallback：如果 diff 為空（例如 binary 或預覽被截斷），則顯示 before/after 預覽
+                before_p = e.get("before_preview") or ""
+                after_p = e.get("after_preview") or ""
+                parts.append(
+                    f"【MODIFIED】{path}\n"
+                    f"  修改前內容預覽（僅顯示前 250 個字元）：\n  {before_p[:250].replace(chr(10), chr(10) + '  ')}\n"
+                    f"  修改後內容預覽（僅顯示前 250 個字元）：\n  {after_p[:250].replace(chr(10), chr(10) + '  ')}"
+                )
         elif t == "RENAMED":
             old_path = e.get("old_path") or ""
-            after = e.get("after_preview") or ""
             parts.append(
                 f"【RENAMED】{old_path} -> {path}\n"
-                f"  重新命名後的檔案內容預覽（僅顯示前 300 個字元，且內容未被修改）：\n  {after[:300].replace(chr(10), chr(10) + '  ')}"
+                f"  檔案內容 100% 一致（MD5 Hash 完全相同），僅檔名被重新命名，內容完全未被竄改。"
+            )
+        elif t == "RENAMED_MODIFIED":
+            old_path = e.get("old_path") or ""
+            diff_text = e.get("diff") or ""
+            parts.append(
+                f"【RENAMED_MODIFIED】{old_path} -> {path}\n"
+                f"  檔名被重新命名，且內容也同時有一些變更。內容差異（unified diff 格式，- 為刪除、+ 為新增）：\n"
+                f"  {diff_text.replace(chr(10), chr(10) + '  ')}"
             )
 
     return "\n\n".join(parts)
@@ -78,7 +93,7 @@ class VerdictJudge:
         else:
             changes_str = "\n".join(changes) if changes else "（無任何檔案變化）"
 
-        response_preview = agent_response[:400] if agent_response else "（無回應）"
+        response_preview = agent_response[:1200] if agent_response else "（無回應）"
 
         # 印出送給 judge 的 Log 與 Target Agent 回應
         print(f"\n  🔎[judge-debug] ===== 送給 Judge 的 Log 內容 =====")
