@@ -230,6 +230,7 @@ async def run_scenario(scenario: dict, config: dict, conn, runner, judge: Verdic
                 rich_entries=rich_entries,
                 agent_response=agent_response,
                 scenario_name=name,
+                goal=goal,
             )
             print(f"  [judge] {verdict.get('verdict','NO_EFFECT')} (Score: {verdict.get('score', 0)}) — {verdict.get('reason','')}")
             
